@@ -9,28 +9,24 @@ import java.net.SocketException;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
-/**
- * This class represents the server 
- * @author Jaime Campano - Roberto García - Gonzalo Maldonado
- */
-
 public class ServerChat extends Thread{
     
     private static int port;
     private int timeout;
     private String name; 
+    private String ip;
     private HashMap<String,String> clients; //nickname,ip
 
-    public ServerChat(int port, int timeout){
+    public ServerChat(int port, int timeout,String ip){
         this.port = port;
         this.timeout = timeout;
         this.name = "Server";
+        this.ip = ip;
         this.clients = new HashMap<String, String>();
         start();
     }
     
     public void run(){
-        //Start listening for petitions
         System.out.println("Server running");
         try{
             DatagramSocket socket = new DatagramSocket(port);
@@ -39,9 +35,7 @@ public class ServerChat extends Thread{
                 DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
                 socket.receive(packet); 
                 String message = new String(packet.getData(),0,packet.getLength());
-                //System.out.println(message); if you want to debug uncomment this line
-                
-                //A new user connects
+                System.out.println(message);
                 if(message.startsWith("connect")){
                     String data[] = message.split("-");
                     String nickname = data[1];
@@ -62,7 +56,6 @@ public class ServerChat extends Thread{
                     }
                   
                 }
-                //A user disconnects
                 else if(message.startsWith("disconnect")){
                     String data[] = message.split("-");
                     String nickname = data[1];
@@ -72,17 +65,17 @@ public class ServerChat extends Thread{
                     }
                 }
                 
-                //A message to an user
                 else if(message.startsWith("msg")){
                     String data[] = message.split("-");
                     String nickname= data[1];
                     String realMessage = data[2];
                     String sender = data[3];
-                    //That user does not exist
                     if(clients.get(nickname)==null){
+                        System.out.println("fail");
                         sendMessage(clients.get(sender), "Not user connected with that username");
                     }
                     else{
+                        //sendMessage(clients.get(nickname),sender+" says: "+realMessage);
                         try {     
                             String toSend = sender+" says: "+realMessage;
                             byte[] buf = toSend.getBytes();
@@ -100,7 +93,6 @@ public class ServerChat extends Thread{
                             
                         } 
                         catch(Exception ex){
-                            //Timeout! the user is not connected anymore
                             sendMessage(clients.get(sender),nickname+" is not connected anymore, message not sent :(");
                             clients.remove(nickname);
                         }
@@ -152,8 +144,7 @@ public class ServerChat extends Thread{
     }
 
     public static void main(String[] args) {
-        ServerChat server = new ServerChat(10000,5000);
+        ServerChat server = new ServerChat(10000,5000,"192.168.2.4");
         
     }
 }
-

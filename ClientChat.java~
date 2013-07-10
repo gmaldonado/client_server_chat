@@ -1,3 +1,7 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
 
 
 import java.io.IOException;
@@ -5,12 +9,10 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.util.Scanner;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
- * This class represents the client of the Chat
- * @author Jaime Campano - Roberto García - Gonzalo Maldonado
+ *
+ * @author gmaldonado
  */
 public class ClientChat{
     private final static Scanner scanner = new Scanner(System.in);
@@ -33,10 +35,6 @@ public class ClientChat{
         
     }
     
-    /**
-     * This thread is used to act as a listener of the messages that the 
-     * client receipts from the Server
-     */
     private class RunnableThread implements Runnable{
         Thread runner;
         public RunnableThread(){
@@ -56,7 +54,6 @@ public class ClientChat{
                             String data[] = message.split("-");
                             String userConnected = data[1];
                             if(!userConnected.equals(nickname)){
-                                //If a new user has connected
                                 System.out.println(userConnected+" has connected");
                             }
                         }
@@ -64,12 +61,10 @@ public class ClientChat{
                             String data[] = message.split("-");
                             String userDisconnected = data[1];
                             if(!userDisconnected.equals(nickname)){
-                                //If a user has disconnected
                                 System.out.println(userDisconnected+" has disconnected");
                             }
                         }
                         else{
-                            //In any other case it's because it's receiving a message
                             System.out.println(message);
                             sendAck(packet, socket, "1");
                         }
@@ -90,17 +85,14 @@ public class ClientChat{
             while(true){
                 try{
                     String line = scanner.nextLine();
-                    //Disconnects from the server
                     if(line.equals("disconnect")){
                         sendMessage("disconnect-"+nickname);
                         System.out.println("Bye..");
                         System.exit(0);
                     }
-                    //Sends a message to another user
                     else if(line.startsWith("msg")){
                         sendMessage(line+"-"+nickname);
                     }
-                    //Getting all connected users but me 
                     else if(line.equals("users")){
                         String connectedUsers = getConnectedUsers();
                         if(connectedUsers!=null){
@@ -220,42 +212,7 @@ public class ClientChat{
     
     
     public static void main(String[] args) {
-        String myNickname;
-        String myIp;
-        String server;
-        Scanner read = new Scanner(System.in);
-        System.out.println("Please enter the IP of the server");
-        server = read.nextLine();
-        while(!validate(server)){
-            System.out.println("Format error, please enter the IP of the server");
-            server = read.nextLine();
-        }
-        
-        System.out.println("Please enter your IP");
-        myIp = read.nextLine();
-        while(!validate(myIp)){
-            System.out.println("Format error, please enter your IP");
-            myIp = read.nextLine();
-        }
-        
-        System.out.println("Please enter your nickname");
-        myNickname = read.nextLine();
-        ClientChat client = new ClientChat(10000,5000,myNickname,myIp,server);
+        ClientChat client = new ClientChat(10000,5000,"gonzalo","172.17.49.158","172.17.49.158");
         client.startClient();
     }
-    
-    private static final String PATTERN = 
-        "^([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\." +
-        "([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\." +
-        "([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\." +
-        "([01]?\\d\\d?|2[0-4]\\d|25[0-5])$";
-
-    public static boolean validate(final String ip){          
-
-          Pattern pattern = Pattern.compile(PATTERN);
-          Matcher matcher = pattern.matcher(ip);
-          return matcher.matches();             
-    }
-    
 }
-
